@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fdic-historical
+  namespace: default
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 84000
+  template:
+    spec:
+      serviceAccountName: fdic-pipeline
+      restartPolicy: Never
+      containers:
+        - name: fdic-pipeline
+          image: ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/fdic-pipeline:TAG
+          imagePullPolicy: IfNotPresent
+          args: ["--mode", "historical"]
+          env:
+            - name: AWS_REGION
+              value: us-east-2
+            - name: DB_SECRET_ARN
+              value: "SECRET_ARN"
+            - name: FDIC_PAGE_SIZE
+              value: "1000"
+            - name: FDIC_OVERLAP_DAYS
+              value: "7"
+            - name: LOG_LEVEL
+              value: INFO
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi

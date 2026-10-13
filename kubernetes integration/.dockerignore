@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.zip
+.venv/
+venv/
+lambda-build*/
+package/
+test_*.py
+README.md
+schema.sql

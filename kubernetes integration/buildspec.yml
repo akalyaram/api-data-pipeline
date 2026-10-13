@@ -1,0 +1,21 @@
+version: 0.2
+
+env:
+  variables:
+    ECR_REPOSITORY: fdic-pipeline
+
+phases:
+  pre_build:
+    commands:
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REGISTRY_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+      - REPOSITORY_URI="${REGISTRY_URI}/${ECR_REPOSITORY}"
+      - IMAGE_TAG="build-${CODEBUILD_BUILD_NUMBER}"
+      - aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "${REGISTRY_URI}"
+  build:
+    commands:
+      - docker build --platform linux/amd64 --tag "${REPOSITORY_URI}:${IMAGE_TAG}" .
+  post_build:
+    commands:
+      - docker push "${REPOSITORY_URI}:${IMAGE_TAG}"
+      - echo "IMAGE_URI=${REPOSITORY_URI}:${IMAGE_TAG}"
